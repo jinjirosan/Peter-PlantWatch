@@ -4,21 +4,12 @@ from PIL import Image, ImageDraw, ImageFont
 import math
 import time
 import os
+from constants import DISPLAY_WIDTH, DISPLAY_HEIGHT, COLOR_WHITE, COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_BLACK
 
 # Update paths to icons and fonts
 ICONS_DIR = "/usr/share/grow-monitor/icons"
 FONTS_DIR = "/usr/share/grow-monitor/fonts/ttf"
 FONT_PATH = os.path.join(FONTS_DIR, "RobotoMedium.ttf")
-
-# Constants
-DISPLAY_WIDTH = 160
-DISPLAY_HEIGHT = 80
-COLOR_WHITE = (255, 255, 255)
-COLOR_BLUE = (31, 137, 251)
-COLOR_GREEN = (99, 255, 124)
-COLOR_YELLOW = (254, 219, 82)
-COLOR_RED = (247, 0, 63)
-COLOR_BLACK = (0, 0, 0)
 
 # Load icons
 icon_drop = Image.open(os.path.join(ICONS_DIR, "icon-drop.png")).convert("RGBA")
