@@ -17,7 +17,7 @@ class View:
     def update(self): pass
     def render(self): pass
     def clear(self):
-        self._draw.rectangle((0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT), (0, 0, 0))
+        self._draw.rectangle((0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT), fill=COLOR_BLACK)
 
     def icon(self, icon, position, color):
         col = Image.new("RGBA", icon.size, color=color)

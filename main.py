@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# reverted
-
-#!/usr/bin/env python3
 import logging
 import math
 import pathlib
@@ -57,10 +54,11 @@ def main():
     light = ltr559.LTR559()
 
     # Set up our canvas and prepare for drawing
-    image = Image.new("RGBA", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=(255, 255, 255))
+    image = Image.new("RGB", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=(255, 255, 255))  # Use RGB mode for display compatibility
+    draw = ImageDraw.Draw(image)  # Create a drawing context for the canvas
 
     # Setup blank image for darkness
-    image_blank = Image.new("RGBA", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=(0, 0, 0))
+    image_blank = Image.new("RGB", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=(0, 0, 0))
 
     # Pick a random selection of plant icons to display on screen
     channels = [
@@ -166,7 +164,7 @@ Low Light Value {:.2f}
         else:
             viewcontroller.render()
             display.wake()
-            display.display(image.convert("RGB"))
+            display.display(image)
 
         config.set_general(
             {

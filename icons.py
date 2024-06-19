@@ -4,13 +4,16 @@ from PIL import Image
 
 ICONS_DIR = "/usr/share/peterplantwatch/icons"
 
-icon_drop = Image.open(f"{ICONS_DIR}/icon-drop.png").convert("RGBA")
-icon_nodrop = Image.open(f"{ICONS_DIR}/icon-nodrop.png").convert("RGBA")
-icon_rightarrow = Image.open(f"{ICONS_DIR}/icon-rightarrow.png").convert("RGBA")
-icon_alarm = Image.open(f"{ICONS_DIR}/icon-alarm.png").convert("RGBA")
-icon_snooze = Image.open(f"{ICONS_DIR}/icon-snooze.png").convert("RGBA")
-icon_help = Image.open(f"{ICONS_DIR}/icon-help.png").convert("RGBA")
-icon_settings = Image.open(f"{ICONS_DIR}/icon-settings.png").convert("RGBA")
-icon_channel = Image.open(f"{ICONS_DIR}/icon-channel.png").convert("RGBA")
-icon_backdrop = Image.open(f"{ICONS_DIR}/icon-backdrop.png").convert("RGBA")
-icon_return = Image.open(f"{ICONS_DIR}/icon-return.png").convert("RGBA")
+def load_icon(name):
+    return Image.open(f"{ICONS_DIR}/{name}.png").convert("RGBA")
+
+icon_drop = load_icon("icon-drop")
+icon_nodrop = load_icon("icon-nodrop")
+icon_rightarrow = load_icon("icon-rightarrow")
+icon_alarm = load_icon("icon-alarm")
+icon_snooze = load_icon("icon-snooze")
+icon_help = load_icon("icon-help")
+icon_settings = load_icon("icon-settings")
+icon_channel = load_icon("icon-channel")
+icon_backdrop = load_icon("icon-backdrop")
+icon_return = load_icon("icon-return")
