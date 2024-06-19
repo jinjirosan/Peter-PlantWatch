@@ -17,7 +17,7 @@
 # HAT				 : Pimoroni Grow Hat Mini
 # Water drivers      : COM3700 Mini submersible water pump
 # Sensors            : Soil moisture sensor
-					 : BME280
+#					 : BME280
 # Codebase           : Python3
 #
 # (2024) JinjiroSan
