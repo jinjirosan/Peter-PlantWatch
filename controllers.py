@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 class ViewController:
     def __init__(self, views):
         self.views = views
