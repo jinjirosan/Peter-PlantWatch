@@ -1,4 +1,29 @@
 #!/usr/bin/env python3
+#    ___     _                                         
+#   / _ \___| |_ ___ _ __                              
+#  / /_)/ _ \ __/ _ \ '__|                             
+# / ___/  __/ ||  __/ |                                
+# \/    \___|\__\___|_|                                                                                 
+#    ___ _             _   __    __      _       _     
+#   / _ \ | __ _ _ __ | |_/ / /\ \ \__ _| |_ ___| |__  
+#  / /_)/ |/ _` | '_ \| __\ \/  \/ / _` | __/ __| '_ \ 
+# / ___/| | (_| | | | | |_ \  /\  / (_| | || (__| | | |
+# \/    |_|\__,_|_| |_|\__| \/  \/ \__,_|\__\___|_| |_|
+#                       .: auto-grow the greens yo :.                          
+#
+# Automated plant monitoring and watering system
+#
+# hardware platform  : Raspberry Pi Zero W
+# HAT				 : Pimoroni Grow Hat Mini
+# Water drivers      : COM3700 Mini submersible water pump
+# Sensors            : Soil moisture sensor
+					 : BME280
+# Codebase           : Python3
+#
+# (2024) JinjiroSan
+#
+# main.py : v2-2.5 (stable) - refactor C1.0.0
+
 import logging
 import math
 import pathlib
@@ -13,7 +38,7 @@ import RPi.GPIO as GPIO
 import ST7735
 from fonts.ttf import RobotoMedium as UserFont
 import yaml
-from grow import Piezo
+from grow import Piezo                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 from grow.moisture import Moisture
 from grow.pump import Pump
 from models import Channel, Alarm
