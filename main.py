@@ -148,6 +148,16 @@ Low Light Value {:.2f}
         ]
     )
 
+    # Log values initially
+    for channel in channels:
+        log_values(
+            channel.channel,
+            channel.sensor.moisture,
+            channel.sensor.saturation * 100,
+            channel.water(),
+            light.get_lux()
+        )
+
     last_log_time = time.time()  # Track the last log time
 
     while True:
@@ -187,10 +197,7 @@ Low Light Value {:.2f}
                     channel.sensor.moisture,
                     channel.sensor.saturation * 100,
                     channel.water(),
-                    light.get_lux(),
-                    channel.wet_point,
-                    channel.dry_point,
-                    channel.auto_water
+                    light.get_lux()
                 )
             last_log_time = current_time
 
