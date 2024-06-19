@@ -128,6 +128,18 @@ class MainView(View):
         self.icon(icon_backdrop.rotate(180), (DISPLAY_WIDTH - 26, 0), COLOR_WHITE)
         self.icon(icon_settings, (DISPLAY_WIDTH - 19 - 3, 3), (55, 55, 55))
 
+    def button_a(self):
+        return False
+
+    def button_b(self):
+        return False
+
+    def button_x(self):
+        return False
+
+    def button_y(self):
+        return False
+
 class EditView(View):
     def __init__(self, image, options=[]):
         super().__init__(image)
