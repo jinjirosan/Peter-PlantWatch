@@ -3,8 +3,10 @@
 from grow.moisture import Moisture
 from grow.pump import Pump
 from constants import COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_RED
+from views import View, icon_alarm, icon_snooze
 import logging
 import time
+import threading
 import math
 
 class Channel:
