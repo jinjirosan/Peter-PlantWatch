@@ -266,6 +266,18 @@ class ChannelView(View):
             context = f"Now: {self.channel.sensor.saturation * 100:.2f}%"
         self._draw.text(position, context, font=self.font, fill=(255, 255, 255))
 
+    def button_a(self):
+        return False
+
+    def button_b(self):
+        return False
+
+    def button_x(self):
+        return False
+
+    def button_y(self):
+        return False
+
 class DetailView(ChannelView):
     def render(self):
         self.clear()
