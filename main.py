@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
 # reverted
 
-import time
-import threading
+#!/usr/bin/env python3
+import logging
+import math
+import pathlib
+import random
 import sys
+import threading
+import time
 from PIL import Image
+
 import ltr559
-
-from config import Config
-from views import MainView, SettingsView, ChannelView, DetailView, ChannelEditView
-from controllers import ViewController
+import RPi.GPIO as GPIO
+import ST7735
+from fonts.ttf import RobotoMedium as UserFont
+import yaml
+from grow import Piezo
+from grow.moisture import Moisture
+from grow.pump import Pump
 from models import Channel, Alarm
-from hardware import setup_gpio, initialize_display, BUTTONS, LABELS
+from views import MainView, SettingsView, DetailView, ChannelEditView
+from controllers import ViewController
+from config import Config
+from constants import DISPLAY_WIDTH, DISPLAY_HEIGHT, BUTTONS, LABELS, FPS, COLOR_WHITE
 from plant_logging import log_values
-from constants import DISPLAY_WIDTH, DISPLAY_HEIGHT
-
-FPS = 10
-
-viewcontroller = None  # Declare globally
 
 def handle_button(pin):
-    global viewcontroller
     index = BUTTONS.index(pin)
     label = LABELS[index]
 
@@ -39,32 +45,107 @@ def handle_button(pin):
         viewcontroller.button_y()
 
 def main():
-    global viewcontroller  # Use global viewcontroller
-    display = initialize_display()
+    global viewcontroller, alarm
+
+    # Set up the ST7735 SPI Display
+    display = ST7735.ST7735(
+        port=0, cs=1, dc=9, backlight=12, rotation=270, spi_speed_hz=80000000
+    )
+    display.begin()
+
+    # Set up light sensor
     light = ltr559.LTR559()
+
+    # Set up our canvas and prepare for drawing
     image = Image.new("RGBA", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=(255, 255, 255))
+
+    # Setup blank image for darkness
     image_blank = Image.new("RGBA", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=(0, 0, 0))
 
-    channels = [Channel(1, 1, 1), Channel(2, 2, 2), Channel(3, 3, 3)]
-    alarm = Alarm(image)
-    config = Config()
-    setup_gpio(BUTTONS, handle_button)
-
-    config.load()
-    for channel in channels: channel.update_from_yml(config.get_channel(channel.channel))
-    alarm.update_from_yml(config.get_general())
-
-    main_options = [
-        {"title": "Alarm Interval", "prop": "interval", "inc": 1, "min": 1, "max": 60, "format": lambda value: f"{value:02.0f}sec", "object": alarm, "help": "Time between alarm beeps."},
-        {"title": "Alarm Enable", "prop": "enabled", "mode": "bool", "format": lambda value: "Yes" if value else "No", "object": alarm, "help": "Enable the piezo alarm beep."},
+    # Pick a random selection of plant icons to display on screen
+    channels = [
+        Channel(1, 1, 1),
+        Channel(2, 2, 2),
+        Channel(3, 3, 3),
     ]
 
-    viewcontroller = ViewController([
-        (MainView(image, channels=channels, alarm=alarm), SettingsView(image, options=main_options)),
-        (DetailView(image, channel=channels[0]), ChannelEditView(image, channel=channels[0])),
-        (DetailView(image, channel=channels[1]), ChannelEditView(image, channel=channels[1])),
-        (DetailView(image, channel=channels[2]), ChannelEditView(image, channel=channels[2])),
-    ])
+    alarm = Alarm(image)
+
+    config = Config()
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(BUTTONS, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+    for pin in BUTTONS:
+        GPIO.add_event_detect(pin, GPIO.FALLING, handle_button, bouncetime=200)
+
+    config.load()
+
+    for channel in channels:
+        channel.update_from_yml(config.get_channel(channel.channel))
+
+    alarm.update_from_yml(config.get_general())
+
+    print("Channels:")
+    for channel in channels:
+        print(channel)
+
+    print(
+        """Settings:
+Alarm Enabled: {}
+Alarm Interval: {:.2f}s
+Low Light Set Screen To Black: {}
+Low Light Value {:.2f}
+""".format(
+            alarm.enabled,
+            alarm.interval,
+            config.get_general().get("black_screen_when_light_low"),
+            config.get_general().get("light_level_low")
+        )
+    )
+
+    main_options = [
+        {
+            "title": "Alarm Interval",
+            "prop": "interval",
+            "inc": 1,
+            "min": 1,
+            "max": 60,
+            "format": lambda value: f"{value:02.0f}sec",
+            "object": alarm,
+            "help": "Time between alarm beeps.",
+        },
+        {
+            "title": "Alarm Enable",
+            "prop": "enabled",
+            "mode": "bool",
+            "format": lambda value: "Yes" if value else "No",
+            "object": alarm,
+            "help": "Enable the piezo alarm beep.",
+        },
+    ]
+
+    viewcontroller = ViewController(
+        [
+            (
+                MainView(image, channels=channels, alarm=alarm),
+                SettingsView(image, options=main_options),
+            ),
+            (
+                DetailView(image, channel=channels[0]),
+                ChannelEditView(image, channel=channels[0]),
+            ),
+            (
+                DetailView(image, channel=channels[1]),
+                ChannelEditView(image, channel=channels[1]),
+            ),
+            (
+                DetailView(image, channel=channels[2]),
+                ChannelEditView(image, channel=channels[2]),
+            ),
+        ]
+    )
 
     while True:
         for channel in channels:
@@ -73,15 +154,10 @@ def main():
             if channel.alarm:
                 alarm.trigger()
 
-            # Log measured values for each channel
-            soil_moisture_abs = channel.sensor.moisture
-            soil_moisture_percent = channel.sensor.saturation * 100
-            water_given = channel.water()
-            light_level = light.get_lux()
-            log_values(channel.channel, soil_moisture_abs, soil_moisture_percent, water_given, light_level)
-
         light_level_low = light.get_lux() < config.get_general().get("light_level_low")
+
         alarm.update(light_level_low)
+
         viewcontroller.update()
 
         if light_level_low and config.get_general().get("black_screen_when_light_low"):
@@ -92,9 +168,17 @@ def main():
             display.wake()
             display.display(image.convert("RGB"))
 
-        config.set_general({"alarm_enable": alarm.enabled, "alarm_interval": alarm.interval})
+        config.set_general(
+            {
+                "alarm_enable": alarm.enabled,
+                "alarm_interval": alarm.interval,
+            }
+        )
+
         config.save()
+
         time.sleep(1.0 / FPS)
+
 
 if __name__ == "__main__":
     main()
