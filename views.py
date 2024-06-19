@@ -5,21 +5,7 @@ import math
 import time
 from constants import DISPLAY_WIDTH, DISPLAY_HEIGHT, COLOR_WHITE, COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_BLACK
 from fonts.ttf import RobotoMedium as UserFont
-
-# Update paths to icons
-ICONS_DIR = "/usr/share/grow-monitor/icons"
-
-# Load icons
-icon_drop = Image.open(f"{ICONS_DIR}/icon-drop.png").convert("RGBA")
-icon_nodrop = Image.open(f"{ICONS_DIR}/icon-nodrop.png").convert("RGBA")
-icon_rightarrow = Image.open(f"{ICONS_DIR}/icon-rightarrow.png").convert("RGBA")
-icon_alarm = Image.open(f"{ICONS_DIR}/icon-alarm.png").convert("RGBA")
-icon_snooze = Image.open(f"{ICONS_DIR}/icon-snooze.png").convert("RGBA")
-icon_help = Image.open(f"{ICONS_DIR}/icon-help.png").convert("RGBA")
-icon_settings = Image.open(f"{ICONS_DIR}/icon-settings.png").convert("RGBA")
-icon_channel = Image.open(f"{ICONS_DIR}/icon-channel.png").convert("RGBA")
-icon_backdrop = Image.open(f"{ICONS_DIR}/icon-backdrop.png").convert("RGBA")
-icon_return = Image.open(f"{ICONS_DIR}/icon-return.png").convert("RGBA")
+from icons import icon_drop, icon_nodrop, icon_rightarrow, icon_alarm, icon_snooze, icon_help, icon_settings, icon_channel, icon_backdrop, icon_return
 
 class View:
     def __init__(self, image):

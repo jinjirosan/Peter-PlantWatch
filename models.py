@@ -6,9 +6,10 @@ import threading
 import logging
 from grow.moisture import Moisture
 from grow.pump import Pump
-from grow import Piezo
+from grow import Piezo  # Import Piezo
 from PIL import Image
-from views import View  
+from views import View  # Import View class
+from icons import icon_alarm, icon_snooze  # Import icons
 
 class Channel:
     colors = [
