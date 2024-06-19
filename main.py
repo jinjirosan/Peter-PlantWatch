@@ -23,6 +23,17 @@
 #
 # (2024) JinjiroSan
 #
+# PeterPlantwatch/
+# ├── main.py
+# ├── config.py
+# ├── views.py
+# ├── controllers.py
+# ├── models.py
+# ├── icons.py
+# ├── constants.py
+# ├── hardware.py
+# └── plant_logging.py
+#
 # main.py : v2-2.5 (stable) - refactor C1.0.0
 
 import logging
