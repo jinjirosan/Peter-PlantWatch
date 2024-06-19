@@ -16,11 +16,15 @@ from constants import DISPLAY_WIDTH, DISPLAY_HEIGHT
 
 FPS = 10
 
+viewcontroller = None  # Declare globally
+
 def handle_button(pin):
+    global viewcontroller
     index = BUTTONS.index(pin)
     label = LABELS[index]
 
-    if label == "A": viewcontroller.button_a()
+    if label == "A":
+        viewcontroller.button_a()
     elif label == "B":
         if not viewcontroller.button_b():
             if viewcontroller.home:
@@ -28,10 +32,13 @@ def handle_button(pin):
                     alarm.cancel_sleep()
                 else:
                     alarm.sleep()
-    elif label == "X": viewcontroller.button_x()
-    elif label == "Y": viewcontroller.button_y()
+    elif label == "X":
+        viewcontroller.button_x()
+    elif label == "Y":
+        viewcontroller.button_y()
 
 def main():
+    global viewcontroller  # Use global viewcontroller
     display = initialize_display()
     light = ltr559.LTR559()
     image = Image.new("RGBA", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=(255, 255, 255))
@@ -62,7 +69,8 @@ def main():
         for channel in channels:
             config.set_channel(channel.channel, channel)
             channel.update()
-            if channel.alarm: alarm.trigger()
+            if channel.alarm:
+                alarm.trigger()
 
             # Log measured values for each channel
             soil_moisture_abs = channel.sensor.moisture
