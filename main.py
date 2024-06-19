@@ -44,6 +44,9 @@ def handle_button(pin):
 def main():
     global viewcontroller, alarm
 
+    # Basic logging configuration
+    logging.basicConfig(level=logging.DEBUG)
+
     # Set up the ST7735 SPI Display
     display = ST7735.ST7735(
         port=0, cs=1, dc=9, backlight=12, rotation=270, spi_speed_hz=80000000
@@ -177,6 +180,7 @@ Low Light Value {:.2f}
 
         current_time = time.time()
         if current_time - last_log_time >= 600:  # Log every 600 seconds (10 minutes)
+            logging.debug("Logging values for all channels")
             for channel in channels:
                 log_values(
                     channel.channel,
