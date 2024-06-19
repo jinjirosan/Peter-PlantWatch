@@ -104,17 +104,17 @@ Wet point: {self.wet_point}
 Dry point: {self.dry_point}
 """
 
-   def to_dict(self):
-    return {
-        "enabled": self.enabled,
-        "warn_level": self.warn_level,
-        "wet_point": self.wet_point,
-        "dry_point": self.dry_point,
-        "watering_delay": self.watering_delay,
-        "auto_water": self.auto_water,
-        "pump_time": self.pump_time,
-        "pump_speed": self.pump_speed,
-        "water_level": self.water_level,
+    def to_dict(self):
+        return {
+            "enabled": self.enabled,
+            "warn_level": self.warn_level,
+            "wet_point": self.wet_point,
+            "dry_point": self.dry_point,
+            "watering_delay": self.watering_delay,
+            "auto_water": self.auto_water,
+            "pump_time": self.pump_time,
+            "pump_speed": self.pump_speed,
+            "water_level": self.water_level,
     }
 
     def water(self):
