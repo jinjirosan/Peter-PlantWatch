@@ -11,7 +11,7 @@ from views import MainView, SettingsView, ChannelView, DetailView, ChannelEditVi
 from controllers import ViewController
 from models import Channel, Alarm
 from hardware import setup_gpio, initialize_display, BUTTONS, LABELS
-from logging import log_values
+from plant_logging import log_values
 
 FPS = 10
 
