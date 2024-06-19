@@ -2,7 +2,7 @@
 
 from PIL import Image
 
-ICONS_DIR = "/usr/share/grow-monitor/icons"
+ICONS_DIR = "/usr/share/peterplantwatch/icons"
 
 icon_drop = Image.open(f"{ICONS_DIR}/icon-drop.png").convert("RGBA")
 icon_nodrop = Image.open(f"{ICONS_DIR}/icon-nodrop.png").convert("RGBA")
