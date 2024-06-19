@@ -12,6 +12,7 @@ from controllers import ViewController
 from models import Channel, Alarm
 from hardware import setup_gpio, initialize_display, BUTTONS, LABELS
 from plant_logging import log_values
+from constants import DISPLAY_WIDTH, DISPLAY_HEIGHT
 
 FPS = 10
 
