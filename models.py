@@ -5,6 +5,7 @@ import math
 from grow.moisture import Moisture
 from grow.pump import Pump
 from PIL import Image
+from views import View  
 
 class Channel:
     colors = [
