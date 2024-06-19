@@ -6,7 +6,7 @@ import random
 import sys
 import threading
 import time
-from PIL import Image
+from PIL import Image, ImageDraw  
 
 import ltr559
 import RPi.GPIO as GPIO
