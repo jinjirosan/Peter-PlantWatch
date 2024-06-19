@@ -6,7 +6,7 @@ import random
 import sys
 import threading
 import time
-from PIL import Image, ImageDraw  
+from PIL import Image, ImageDraw
 
 import ltr559
 import RPi.GPIO as GPIO
@@ -145,6 +145,8 @@ Low Light Value {:.2f}
         ]
     )
 
+    last_log_time = time.time()  # Track the last log time
+
     while True:
         for channel in channels:
             config.set_channel(channel.channel, channel)
@@ -173,10 +175,24 @@ Low Light Value {:.2f}
             }
         )
 
+        current_time = time.time()
+        if current_time - last_log_time >= 600:  # Log every 600 seconds (10 minutes)
+            for channel in channels:
+                log_values(
+                    channel.channel,
+                    channel.sensor.moisture,
+                    channel.sensor.saturation * 100,
+                    channel.water(),
+                    light.get_lux(),
+                    channel.wet_point,
+                    channel.dry_point,
+                    channel.auto_water
+                )
+            last_log_time = current_time
+
         config.save()
 
         time.sleep(1.0 / FPS)
-
 
 if __name__ == "__main__":
     main()
