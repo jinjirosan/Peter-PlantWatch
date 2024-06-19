@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # reverted
 
+#!/usr/bin/env python3
+
 import time
 import threading
 import sys
@@ -78,7 +80,6 @@ def main():
             soil_moisture_percent = channel.sensor.saturation * 100
             water_given = channel.water()
             light_level = light.get_lux()
-
             log_values(channel.channel, soil_moisture_abs, soil_moisture_percent, water_given, light_level)
 
         light_level_low = light.get_lux() < config.get_general().get("light_level_low")
