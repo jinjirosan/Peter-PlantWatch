@@ -77,7 +77,11 @@ def main():
             soil_moisture_percent = channel.sensor.saturation * 100
             water_given = channel.water()
             light_level = light.get_lux()
-            log_values(channel.channel, soil_moisture_abs, soil_moisture_percent, water_given, light_level)
+            wet_point = channel.wet_point
+            dry_point = channel.dry_point
+            auto_water = channel.auto_water
+
+            log_values(channel.channel, soil_moisture_abs, soil_moisture_percent, water_given, light_level, wet_point, dry_point, auto_water)
 
         light_level_low = light.get_lux() < config.get_general().get("light_level_low")
         alarm.update(light_level_low)

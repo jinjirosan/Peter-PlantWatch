@@ -24,6 +24,8 @@ class Config:
         self.general_settings = [
             "alarm_enable",
             "alarm_interval",
+            "black_screen_when_light_low",
+            "light_level_low",
         ]
 
     def load(self, settings_file="settings.yml"):
@@ -62,6 +64,8 @@ class Config:
 
     def set(self, section, settings):
         if isinstance(settings, dict):
+            if section not in self.config:
+                self.config[section] = {}
             self.config[section].update(settings)
         else:
             raise ValueError("Settings should be a dictionary")
