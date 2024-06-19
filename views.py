@@ -3,8 +3,12 @@
 from PIL import Image, ImageDraw, ImageFont
 import math
 import time
+import os
 
-from fonts.ttf import RobotoMedium as UserFont
+# Update paths to icons and fonts
+ICONS_DIR = "/usr/share/grow-monitor/icons"
+FONTS_DIR = "/usr/share/grow-monitor/fonts/ttf"
+FONT_PATH = os.path.join(FONTS_DIR, "RobotoMedium.ttf")
 
 # Constants
 DISPLAY_WIDTH = 160
@@ -17,23 +21,23 @@ COLOR_RED = (247, 0, 63)
 COLOR_BLACK = (0, 0, 0)
 
 # Load icons
-icon_drop = Image.open("icons/icon-drop.png").convert("RGBA")
-icon_nodrop = Image.open("icons/icon-nodrop.png").convert("RGBA")
-icon_rightarrow = Image.open("icons/icon-rightarrow.png").convert("RGBA")
-icon_alarm = Image.open("icons/icon-alarm.png").convert("RGBA")
-icon_snooze = Image.open("icons/icon-snooze.png").convert("RGBA")
-icon_help = Image.open("icons/icon-help.png").convert("RGBA")
-icon_settings = Image.open("icons/icon-settings.png").convert("RGBA")
-icon_channel = Image.open("icons/icon-channel.png").convert("RGBA")
-icon_backdrop = Image.open("icons/icon-backdrop.png").convert("RGBA")
-icon_return = Image.open("icons/icon-return.png").convert("RGBA")
+icon_drop = Image.open(os.path.join(ICONS_DIR, "icon-drop.png")).convert("RGBA")
+icon_nodrop = Image.open(os.path.join(ICONS_DIR, "icon-nodrop.png")).convert("RGBA")
+icon_rightarrow = Image.open(os.path.join(ICONS_DIR, "icon-rightarrow.png")).convert("RGBA")
+icon_alarm = Image.open(os.path.join(ICONS_DIR, "icon-alarm.png")).convert("RGBA")
+icon_snooze = Image.open(os.path.join(ICONS_DIR, "icon-snooze.png")).convert("RGBA")
+icon_help = Image.open(os.path.join(ICONS_DIR, "icon-help.png")).convert("RGBA")
+icon_settings = Image.open(os.path.join(ICONS_DIR, "icon-settings.png")).convert("RGBA")
+icon_channel = Image.open(os.path.join(ICONS_DIR, "icon-channel.png")).convert("RGBA")
+icon_backdrop = Image.open(os.path.join(ICONS_DIR, "icon-backdrop.png")).convert("RGBA")
+icon_return = Image.open(os.path.join(ICONS_DIR, "icon-return.png")).convert("RGBA")
 
 class View:
     def __init__(self, image):
         self._image = image
         self._draw = ImageDraw.Draw(image)
-        self.font = ImageFont.truetype(UserFont, 14)
-        self.font_small = ImageFont.truetype(UserFont, 10)
+        self.font = ImageFont.truetype(FONT_PATH, 14)
+        self.font_small = ImageFont.truetype(FONT_PATH, 10)
 
     def update(self): pass
     def render(self): pass
