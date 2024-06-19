@@ -14,10 +14,11 @@
 # Automated plant monitoring and watering system
 #
 # hardware platform  : Raspberry Pi Zero W
-# HAT				 : Pimoroni Grow Hat Mini
+# HAT                : Pimoroni Grow Hat Mini
 # Water drivers      : COM3700 Mini submersible water pump
-# Sensors            : Soil moisture sensor
-#					 : BME280
+# Sensors            : Capacitive Soil moisture sensor with PFM output
+#                    : BME280 Temperature, Humidity, Air pressure
+#                    : LTR-559 light and proximity sensor 
 # Codebase           : Python3
 #
 # (2024) JinjiroSan
