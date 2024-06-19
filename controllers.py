@@ -29,7 +29,9 @@ class ViewController:
 
     def get_current_view(self):
         view = self.views[self._current_view]
-        return view[self._current_subview] if isinstance(view, tuple) else view
+        if isinstance(view, tuple):
+            view = view[self._current_subview]
+        return view
 
     @property
     def view(self):

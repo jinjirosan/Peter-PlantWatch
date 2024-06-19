@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-# plant_logging.py
 import logging
 import os
 

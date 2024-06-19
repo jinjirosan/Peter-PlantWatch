@@ -335,8 +335,8 @@ class ChannelEditView(ChannelView, EditView):
             {"title": "Pump Speed", "prop": "pump_speed", "inc": 0.05, "min": 0.05, "max": 1.0, "mode": "float", "round": 2, "format": lambda value: f"{value*100:0.0f}%", "help": "Speed of pump"},
             {"title": "Watering Delay", "prop": "watering_delay", "inc": 10, "min": 30, "max": 500, "mode": "int", "format": lambda value: f"{value:0.0f}sec", "help": "Delay between waterings"},
         ]
-        EditView.__init__(self, image, options)
-        ChannelView.__init__(self, image, channel)
+        super().__init__(image, options)
+        self.channel = channel
 
     def render(self):
         self.clear()
