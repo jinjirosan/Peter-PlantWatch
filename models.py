@@ -34,12 +34,13 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.5 (stable) - refactor C1.0.0
+# models.py : v2-2.6 (stable) - refactor C1.0.0
 
 import time
 import math
 import threading
 import logging
+from collections import deque
 from grow.moisture import Moisture
 from grow.pump import Pump
 from grow import Piezo  # Import Piezo
@@ -92,6 +93,11 @@ class Channel:
         self.sensor.set_wet_point(wet_point)
         self.sensor.set_dry_point(dry_point)
 
+        # Debounce mechanism
+        self.moisture_readings = deque(maxlen=5)  # Store the last 5 readings
+        self.reading_interval = 60  # Interval between readings in seconds
+        self.large_change_threshold = 10.0  # Threshold for ignoring large changes in percentage
+
     @property
     def enabled(self):
         return self._enabled
@@ -117,6 +123,34 @@ class Channel:
     def dry_point(self, dry_point):
         self._dry_point = dry_point
         self.sensor.set_dry_point(dry_point)
+
+    def add_moisture_reading(self, reading):
+        self.moisture_readings.append(reading)
+        logging.debug(f"Added moisture reading: {reading}, current window: {list(self.moisture_readings)}")
+
+    def get_moving_average(self):
+        if len(self.moisture_readings) < 2:
+            return self.moisture_readings[0]
+        return sum(self.moisture_readings) / len(self.moisture_readings)
+
+    def should_water(self):
+        if len(self.moisture_readings) < self.moisture_readings.maxlen:
+            return False  # Not enough data yet
+
+        # Calculate the moving average of the readings
+        moving_average = self.get_moving_average()
+        logging.debug(f"Moving average: {moving_average}")
+
+        # Check for large changes and ignore them
+        for reading in self.moisture_readings:
+            if abs(reading - moving_average) > self.large_change_threshold:
+                logging.debug(f"Ignoring large change in reading: {reading}")
+                return False
+
+        # Check if there is a steady decline
+        steady_decline = all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
+        logging.debug(f"Steady decline detected: {steady_decline}")
+        return steady_decline
 
     def warn_color(self):
         value = self.sensor.moisture
@@ -203,7 +237,8 @@ Dry point: {dry_point}
         if not self.enabled:
             return
         sat = self.sensor.saturation
-        if sat < self.water_level:
+        self.add_moisture_reading(sat)
+        if self.should_water() and sat < self.water_level:
             if self.water():
                 logging.info(
                     "Watering Channel: {} - rate {:.2f} for {:.2f}sec".format(
