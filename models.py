@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.6 (stable) - refactor C1.0.0
+# models.py : v2-2.7 (stable) - refactor C1.0.0
 
 import time
 import math
@@ -238,13 +238,17 @@ Dry point: {dry_point}
             return
         sat = self.sensor.saturation
         self.add_moisture_reading(sat)
+        
+        watered = False
         if self.should_water() and sat < self.water_level:
-            if self.water():
+            watered = self.water()
+            if watered:
                 logging.info(
                     "Watering Channel: {} - rate {:.2f} for {:.2f}sec".format(
                         self.channel, self.pump_speed, self.pump_time
                     )
                 )
+        
         if sat < self.warn_level:
             if not self.alarm:
                 logging.warning(
@@ -255,6 +259,13 @@ Dry point: {dry_point}
             self.alarm = True
         else:
             self.alarm = False
+
+        # Log the current state, including whether watering was performed
+        logging.info(
+            "Channel: {}, soil moisture (abs): {:.2f}, soil moisture (%): {:.2f}, water given: {}, light level: {:.2f}".format(
+                self.channel, sat, sat * 100, "Yes" if watered else "No", self.sensor.light_level
+            )
+        )
 
 class Alarm(View):
     def __init__(self, image, enabled=True, interval=10.0, beep_frequency=440):
