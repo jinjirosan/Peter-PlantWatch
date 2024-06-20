@@ -16,7 +16,7 @@ We refined the code and split it into modular pieces to be able to easily extend
 
 ```bash
 PeterPlantwatch/
-├── main.py
+├── main.py  (Entry point for the application. Initializes hardware, loads configuration, and runs the main loop.)
 ├── config.py
 ├── views.py
 ├── controllers.py
