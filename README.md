@@ -16,7 +16,7 @@ We refined the code and split it into modular pieces to be able to easily extend
 
 ```bash
 PeterPlantwatch/
-├── main.py  (Entry point for the application. Initializes hardware, loads configuration, and runs the main loop.)
+├── main.py
 ├── config.py
 ├── views.py
 ├── controllers.py
@@ -26,5 +26,16 @@ PeterPlantwatch/
 ├── hardware.py
 └── plant_logging.py
 ```
+
+1. main.py: Entry point for the application. Initializes hardware, loads configuration, and runs the main loop.
+2. config.py: Handles loading and saving configuration from/to a YAML file.
+3. views.py: Contains all view classes responsible for rendering the display.
+4. controllers.py: Manages switching between different views.
+5. models.py: Contains data models for Channel and Alarm.
+6. icons.py :
+7. constants.py : 
+8. hardware.py: Handles hardware-specific initializations and interactions (GPIO setup and display initialization).
+9. plant_logging.py : 
+
 
 The automated plant monitoring system
