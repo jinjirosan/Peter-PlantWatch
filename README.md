@@ -12,6 +12,7 @@ It started with a Pi Zero W and the Pimoroni Grow HAT but we extended the platfo
 
 I designed the brackets, mounts and parts in Blender and printed on my Snapmaker A250. The stands are in lime green and the mounts/brackets are in bright orange.
 
+![PeterPlantwatch](https://github.com/jinjirosan/Peter-PlantWatch/blob/main/images/IMG_9332.png)
 
 ![PeterPlantwatch](https://github.com/jinjirosan/Peter-PlantWatch/blob/main/images/IMG_9274.gif)
 
