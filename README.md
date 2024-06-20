@@ -14,8 +14,9 @@ It started with a Pi Zero W and the Pimoroni Grow HAT but we extended the platfo
 
 We refined the code and split it into modular pieces to be able to easily extend functionality while we're building the project further.
 
+'''bash
 PeterPlantwatch/
-├── main.py           : Entry point for the application. Initializes hardware, loads configuration, and runs the main loop.
+├── main.py
 ├── config.py
 ├── views.py
 ├── controllers.py
@@ -24,5 +25,6 @@ PeterPlantwatch/
 ├── constants.py
 ├── hardware.py
 └── plant_logging.py
+'''
 
 The automated plant monitoring system
