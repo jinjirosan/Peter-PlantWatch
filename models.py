@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2 (stable) - refactor C1.0.0
+# models.py : v2-2.7.7 (stable) - refactor C2.7.2reverted
 
 import time
 import math
@@ -149,11 +149,12 @@ class Channel:
 
         # Check if there is a steady decline
         steady_decline = all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
-        logging.debug(f"Sudden or strong decline detected: {steady_decline}")
-        return steady_decline
+        logging.debug(f"Steady decline detected: {steady_decline}")
+        
+        return steady_decline and (moving_average < self.water_level)
 
     def warn_color(self):
-        value = self.sensor.moisture
+        value = self.sensor.saturation
 
     def indicator_color(self, value):
         value = 1.0 - value
@@ -237,10 +238,17 @@ Dry point: {dry_point}
         if not self.enabled:
             return
         sat = self.sensor.saturation
+        raw_moisture = self.sensor.read_moisture()
+
+        # Ignore erroneous readings
+        if raw_moisture == 0 or abs(raw_moisture - self.get_moving_average()) > self.large_change_threshold:
+            logging.warning(f"Erroneous reading detected on Channel {self.channel}: raw moisture is {raw_moisture}")
+            return
+
         self.add_moisture_reading(sat)
-        
+
         watered = False
-        if self.should_water() and sat < self.water_level:
+        if self.should_water():
             watered = self.water()
             if watered:
                 logging.info(
@@ -248,7 +256,7 @@ Dry point: {dry_point}
                         self.channel, self.pump_speed, self.pump_time
                     )
                 )
-        
+
         if sat < self.warn_level:
             if not self.alarm:
                 logging.warning(
@@ -262,8 +270,8 @@ Dry point: {dry_point}
 
         # Log the current state, including whether watering was performed
         logging.info(
-            "Channel: {}, soil moisture (abs): {:.2f}, soil moisture (%): {:.2f}, water given: {}".format(
-                self.channel, sat, sat * 100, "Yes" if watered else "No"
+            "Channel: {}, raw moisture: {:.2f}, soil moisture (%): {:.2f}, water given: {}".format(
+                self.channel, raw_moisture, sat * 100, "Yes" if watered else "No"
             )
         )
 
