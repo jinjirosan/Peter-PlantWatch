@@ -9,7 +9,7 @@ As every device needs a name we've decided on Peter PlantWatch.
 
 ## The project
 
-It started with a Pi Zero W and the Pimoroni Grow HAT but we extended the platform with small aquarium pumps, a BME280 temp/humidity sensor, a camera to take daily snapshots, writing the metrics to a logfile and offloading those metrics to my Splunk back-end for dashboarding.
+It started with a Pi Zero W and the Pimoroni Grow HAT but we extended the platform with small aquarium pumps, a BME280 temp/humidity sensor, a camera to take daily snapshots, writing the metrics to a logfile and offloading those metrics to my Splunk back-end for dashboarding and alerting.
 
 I designed the brackets, mounts and parts in Blender and printed on my Snapmaker A250. The stands are in lime green and the mounts/brackets are in bright orange.
 
