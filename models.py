@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.1 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2 (stable) - refactor C1.0.0
 
 import time
 import math
@@ -149,7 +149,7 @@ class Channel:
 
         # Check if there is a steady decline
         steady_decline = all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
-        logging.debug(f"Steady decline detected: {steady_decline}")
+        logging.debug(f"Sudden or strong decline detected: {steady_decline}")
         return steady_decline
 
     def warn_color(self):
