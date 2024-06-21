@@ -43,5 +43,6 @@ PeterPlantwatch/
 8. **hardware.py**: Handles hardware-specific initializations and interactions (GPIO setup and display initialization).
 9. **plant_logging.py**: all the logic for writing the logfiles
 
+The deploy.sh is a custom deployment script for my setup on the raspberry.
 
 The automated plant monitoring system
