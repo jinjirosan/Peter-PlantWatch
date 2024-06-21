@@ -35,9 +35,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# deploy.py : v1-1.2 (stable) - refactor C1.0.0
-
-#!/bin/bash
+# deploy.py : v1-1.2.1 (stable) - refactor C1.0.0
 
 # Define directories
 REPO_DIR="/home/pi/github/Peter-PlantWatch"
