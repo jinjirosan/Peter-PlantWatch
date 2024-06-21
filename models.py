@@ -34,49 +34,19 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.6 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2 (stable) - refactor C1.0.0
 
 import time
 import math
 import threading
 import logging
 from collections import deque
+from grow.moisture import Moisture
 from grow.pump import Pump
 from grow import Piezo  # Import Piezo
 from PIL import Image
 from views import View  # Import View class
 from icons import icon_alarm, icon_snooze  # Import icons
-
-class Moisture:
-    def __init__(self, channel):
-        self.channel = channel
-        self._wet_point = 0
-        self._dry_point = 0
-
-    def set_wet_point(self, wet_point):
-        self._wet_point = wet_point
-
-    def set_dry_point(self, dry_point):
-        self._dry_point = dry_point
-
-    @property
-    def saturation(self):
-        # Get the raw moisture value
-        raw_value = self.read_moisture()
-        # Calculate the percentage
-        if self._dry_point == self._wet_point:
-            return 0
-        return (raw_value - self._dry_point) / (self._wet_point - self._dry_point)
-
-    def read_moisture(self):
-        # Placeholder method to simulate reading from the sensor.
-        # Replace this with the actual sensor reading logic.
-        return self._get_raw_moisture_from_sensor()
-
-    def _get_raw_moisture_from_sensor(self):
-        # Placeholder for actual sensor reading logic.
-        # Replace this with the actual code to get the raw moisture value.
-        return 5  # Example value, replace with actual sensor reading.
 
 class Channel:
     colors = [
@@ -179,9 +149,8 @@ class Channel:
 
         # Check if there is a steady decline
         steady_decline = all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
-        logging.debug(f"Steady decline detected: {steady_decline}")
-        
-        return steady_decline and (moving_average < self.water_level)
+        logging.debug(f"Sudden or strong decline detected: {steady_decline}")
+        return steady_decline
 
     def warn_color(self):
         value = self.sensor.moisture
@@ -268,17 +237,10 @@ Dry point: {dry_point}
         if not self.enabled:
             return
         sat = self.sensor.saturation
-        raw_moisture = self.sensor.read_moisture()
-
-        # Ignore erroneous readings
-        if raw_moisture == 0:
-            logging.warning(f"Erroneous reading detected on Channel {self.channel}: raw moisture is 0")
-            return
-
         self.add_moisture_reading(sat)
-
+        
         watered = False
-        if self.should_water():
+        if self.should_water() and sat < self.water_level:
             watered = self.water()
             if watered:
                 logging.info(
@@ -286,7 +248,7 @@ Dry point: {dry_point}
                         self.channel, self.pump_speed, self.pump_time
                     )
                 )
-
+        
         if sat < self.warn_level:
             if not self.alarm:
                 logging.warning(
@@ -300,8 +262,8 @@ Dry point: {dry_point}
 
         # Log the current state, including whether watering was performed
         logging.info(
-            "Channel: {}, raw moisture: {:.2f}, soil moisture (%): {:.2f}, water given: {}".format(
-                self.channel, raw_moisture, sat * 100, "Yes" if watered else "No"
+            "Channel: {}, soil moisture (abs): {:.2f}, soil moisture (%): {:.2f}, water given: {}".format(
+                self.channel, sat, sat * 100, "Yes" if watered else "No"
             )
         )
 
