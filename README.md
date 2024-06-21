@@ -3,7 +3,6 @@
 My daughter planted sunflower seeds in class today to learn about the different stages of growth and how to care for plants. After a couple of weeks all the kids brought the pots home with the assignment to water them and measure size every week.
 
 I thought, why not combine that with coding, IoT and automation because well we can .. and --> lazy :-)
-
 It's also nice for her to see how to apply coding to normal everyday challenges to make life better.
 
 As every device needs a name we've decided on Peter PlantWatch.
