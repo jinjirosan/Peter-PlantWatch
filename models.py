@@ -34,14 +34,14 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.4 (stable) - refactor C1.0.0
+# models.py : v2-2.7.5 (stable) - refactor C1.0.0
 
 import time
 import math
 import threading
 import logging
 from collections import deque
-from grow.moisture import Moisture
+from grow.moisture import Moisture  # Ensure this import matches your actual module structure
 from grow.pump import Pump
 from grow import Piezo  # Import Piezo
 from PIL import Image
