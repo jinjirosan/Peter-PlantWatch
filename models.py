@@ -34,19 +34,41 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.7 (stable) - refactor C2.7.2reverted
+# models.py : v2-2.7.8 (stable) - refactor C1.0.0
 
 import time
 import math
 import threading
 import logging
 from collections import deque
-from grow.moisture import Moisture
 from grow.pump import Pump
 from grow import Piezo  # Import Piezo
 from PIL import Image
 from views import View  # Import View class
 from icons import icon_alarm, icon_snooze  # Import icons
+
+class Moisture:
+    def __init__(self, channel):
+        self.channel = channel
+        self._wet_point = 0
+        self._dry_point = 0
+
+    def set_wet_point(self, wet_point):
+        self._wet_point = wet_point
+
+    def set_dry_point(self, dry_point):
+        self._dry_point = dry_point
+
+    @property
+    def saturation(self):
+        if not hasattr(self, 'readings') or len(self.readings) == 0:
+            return 0
+        # Get the average of the readings
+        raw_value = sum(self.readings) / len(self.readings)
+        # Calculate the percentage
+        if self._dry_point == self._wet_point:
+            return 0
+        return (raw_value - self._dry_point) / (self._wet_point - self._dry_point)
 
 class Channel:
     colors = [
@@ -95,6 +117,7 @@ class Channel:
 
         # Debounce mechanism
         self.moisture_readings = deque(maxlen=5)  # Store the last 5 readings
+        self.sensor.readings = self.moisture_readings  # Link readings to sensor
         self.reading_interval = 60  # Interval between readings in seconds
         self.large_change_threshold = 10.0  # Threshold for ignoring large changes in percentage
 
@@ -150,7 +173,7 @@ class Channel:
         # Check if there is a steady decline
         steady_decline = all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
         logging.debug(f"Steady decline detected: {steady_decline}")
-        
+
         return steady_decline and (moving_average < self.water_level)
 
     def warn_color(self):
@@ -238,11 +261,10 @@ Dry point: {dry_point}
         if not self.enabled:
             return
         sat = self.sensor.saturation
-        raw_moisture = self.sensor.read_moisture()
 
         # Ignore erroneous readings
-        if raw_moisture == 0 or abs(raw_moisture - self.get_moving_average()) > self.large_change_threshold:
-            logging.warning(f"Erroneous reading detected on Channel {self.channel}: raw moisture is {raw_moisture}")
+        if len(self.moisture_readings) == 0 or abs(self.moisture_readings[-1] - self.get_moving_average()) > self.large_change_threshold:
+            logging.warning(f"Erroneous reading detected on Channel {self.channel}: moisture readings {list(self.moisture_readings)}")
             return
 
         self.add_moisture_reading(sat)
@@ -270,8 +292,8 @@ Dry point: {dry_point}
 
         # Log the current state, including whether watering was performed
         logging.info(
-            "Channel: {}, raw moisture: {:.2f}, soil moisture (%): {:.2f}, water given: {}".format(
-                self.channel, raw_moisture, sat * 100, "Yes" if watered else "No"
+            "Channel: {}, soil moisture (%): {:.2f}, water given: {}".format(
+                self.channel, sat * 100, "Yes" if watered else "No"
             )
         )
 
