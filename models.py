@@ -34,19 +34,49 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.5 (stable) - refactor C1.0.0
+# models.py : v2-2.7.6 (stable) - refactor C1.0.0
 
 import time
 import math
 import threading
 import logging
 from collections import deque
-from grow.moisture import Moisture  # Ensure this import matches your actual module structure
 from grow.pump import Pump
 from grow import Piezo  # Import Piezo
 from PIL import Image
 from views import View  # Import View class
 from icons import icon_alarm, icon_snooze  # Import icons
+
+class Moisture:
+    def __init__(self, channel):
+        self.channel = channel
+        self._wet_point = 0
+        self._dry_point = 0
+
+    def set_wet_point(self, wet_point):
+        self._wet_point = wet_point
+
+    def set_dry_point(self, dry_point):
+        self._dry_point = dry_point
+
+    @property
+    def saturation(self):
+        # Get the raw moisture value
+        raw_value = self.read_moisture()
+        # Calculate the percentage
+        if self._dry_point == self._wet_point:
+            return 0
+        return (raw_value - self._dry_point) / (self._wet_point - self._dry_point)
+
+    def read_moisture(self):
+        # Placeholder method to simulate reading from the sensor.
+        # Replace this with the actual sensor reading logic.
+        return self._get_raw_moisture_from_sensor()
+
+    def _get_raw_moisture_from_sensor(self):
+        # Placeholder for actual sensor reading logic.
+        # Replace this with the actual code to get the raw moisture value.
+        return 5  # Example value, replace with actual sensor reading.
 
 class Channel:
     colors = [
