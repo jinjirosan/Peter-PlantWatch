@@ -35,11 +35,15 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# deploy.py : v1-1.1 (stable) - refactor C1.0.0
+# deploy.py : v1-1.2 (stable) - refactor C1.0.0
+
+#!/bin/bash
 
 # Define directories
 REPO_DIR="/home/pi/github/Peter-PlantWatch"
 DEPLOY_DIR="/usr/share/peterplantwatch"
+SCRIPT_DIR="/usr/local/bin"
+SCRIPT_NAME="deploy.sh"
 
 # Navigate to the repository directory
 cd $REPO_DIR
@@ -80,6 +84,19 @@ fi
 chmod +x $DEPLOY_DIR/*.py
 if [ $? -ne 0 ]; then
   echo "Error: Unable to set executable permission on Python files."
+  exit 1
+fi
+
+# Copy the deploy.sh script to a known path directory and make it executable
+cp $REPO_DIR/$SCRIPT_NAME $SCRIPT_DIR/
+if [ $? -ne 0 ]; then
+  echo "Error: Unable to copy deploy script to $SCRIPT_DIR."
+  exit 1
+fi
+
+chmod +x $SCRIPT_DIR/$SCRIPT_NAME
+if [ $? -ne 0 ]; then
+  echo "Error: Unable to set executable permission on deploy script."
   exit 1
 fi
 
