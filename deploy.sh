@@ -19,7 +19,7 @@
 # Sensors            : Capacitive Soil moisture sensor with PFM output
 #                    : BME280 Temperature, Humidity, Air pressure
 #                    : LTR-559 light and proximity sensor 
-# Codebase           : Python3
+# Codebase           : bash
 # Description        : automation to put all the files in the correct spot on the Raspberry
 #
 # (2024) JinjiroSan
@@ -35,7 +35,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# deploy.py : v1-1.2.1 (stable) - refactor C1.0.0
+# deploy.py : v1-1.2.2 (stable) - refactor C1.0.0
 
 # Define directories
 REPO_DIR="/home/pi/github/Peter-PlantWatch"
