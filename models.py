@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7 (stable) - refactor C1.0.0
+# models.py : v2-2.7.1 (stable) - refactor C1.0.0
 
 import time
 import math
@@ -262,8 +262,8 @@ Dry point: {dry_point}
 
         # Log the current state, including whether watering was performed
         logging.info(
-            "Channel: {}, soil moisture (abs): {:.2f}, soil moisture (%): {:.2f}, water given: {}, light level: {:.2f}".format(
-                self.channel, sat, sat * 100, "Yes" if watered else "No", self.sensor.light_level
+            "Channel: {}, soil moisture (abs): {:.2f}, soil moisture (%): {:.2f}, water given: {}".format(
+                self.channel, sat, sat * 100, "Yes" if watered else "No"
             )
         )
 
