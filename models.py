@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.8 (stable) - refactor C1.0.0
+# models.py : v2-2.7.9 (stable) - refactor C1.0.0
 
 import time
 import math
@@ -52,12 +52,20 @@ class Moisture:
         self.channel = channel
         self._wet_point = 0
         self._dry_point = 0
+        self.readings = []  # Assuming this is where moisture readings are stored
 
     def set_wet_point(self, wet_point):
         self._wet_point = wet_point
 
     def set_dry_point(self, dry_point):
         self._dry_point = dry_point
+
+    @property
+    def moisture(self):
+        if not hasattr(self, 'readings') or len(self.readings) == 0:
+            return 0
+        # Return the latest moisture reading
+        return self.readings[-1]
 
     @property
     def saturation(self):
@@ -69,6 +77,7 @@ class Moisture:
         if self._dry_point == self._wet_point:
             return 0
         return (raw_value - self._dry_point) / (self._wet_point - self._dry_point)
+
 
 class Channel:
     colors = [
