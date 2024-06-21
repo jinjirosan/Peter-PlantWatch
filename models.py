@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.3 (stable) - refactor C1.0.0
+# models.py : v2-2.7.4 (stable) - refactor C1.0.0
 
 import time
 import math
@@ -238,6 +238,13 @@ Dry point: {dry_point}
         if not self.enabled:
             return
         sat = self.sensor.saturation
+        raw_moisture = self.sensor.read_moisture()
+
+        # Ignore erroneous readings
+        if raw_moisture == 0:
+            logging.warning(f"Erroneous reading detected on Channel {self.channel}: raw moisture is 0")
+            return
+
         self.add_moisture_reading(sat)
 
         watered = False
@@ -249,7 +256,7 @@ Dry point: {dry_point}
                         self.channel, self.pump_speed, self.pump_time
                     )
                 )
-        
+
         if sat < self.warn_level:
             if not self.alarm:
                 logging.warning(
@@ -263,8 +270,8 @@ Dry point: {dry_point}
 
         # Log the current state, including whether watering was performed
         logging.info(
-            "Channel: {}, soil moisture (abs): {:.2f}, soil moisture (%): {:.2f}, water given: {}".format(
-                self.channel, sat, sat * 100, "Yes" if watered else "No"
+            "Channel: {}, raw moisture: {:.2f}, soil moisture (%): {:.2f}, water given: {}".format(
+                self.channel, raw_moisture, sat * 100, "Yes" if watered else "No"
             )
         )
 
