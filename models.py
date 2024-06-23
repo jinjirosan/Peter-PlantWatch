@@ -34,11 +34,12 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f4 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f5 (stable) - refactor C1.0.0
 # changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
 #           : f2 - ensure the update method in Channel properly reflects when watering occurs
 #           : f3 - correctly import log_values
 #           : f4 - added reusable context.py class
+#           : f5 - Change steady_decline to sudden_or_large_change. Ensure that sudden_or_large_change returns True if a large change is detected (which we want to ignore), and False otherwise.
 
 import time
 import math
@@ -280,6 +281,34 @@ Dry point: {dry_point}
             watered,
             context.light_level
         )
+
+def add_moisture_reading(self, reading):
+    if reading == 0 and self.sensor.saturation > self.water_level:
+        logging.warning(f"Ignoring invalid reading: {reading}")
+        return
+    self.moisture_readings.append(reading)
+    logging.debug(f"Added moisture reading: {reading}, current window: {list(self.moisture_readings)}")
+
+def get_moving_average(self):
+    if len(self.moisture_readings) < 2:
+        return self.moisture_readings[0]
+    return sum(self.moisture_readings) / len(self.moisture_readings)
+
+def sudden_or_large_change(self):
+    if len(self.moisture_readings) < self.moisture_readings.maxlen:
+        return False  # Not enough data yet
+
+    # Calculate the moving average of the readings
+    moving_average = self.get_moving_average()
+    logging.debug(f"Moving average: {moving_average}")
+
+    # Check for large changes
+    for reading in self.moisture_readings:
+        if abs(reading - moving_average) > self.large_change_threshold:
+            logging.debug(f"Detected large change in reading: {reading}")
+            return True
+
+    return False
 
 
 
