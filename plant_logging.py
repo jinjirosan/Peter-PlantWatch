@@ -34,14 +34,15 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# plant_logging.py : v2-2.5.1.f2 (stable) - refactor C1.0.0
+# plant_logging.py : v2-2.5.1.f3 (stable) - refactor C1.0.0
 # changelog : include a mechanism to track the last watering event and ensure it only logs "Yes" for the actual watering event
 #           : f1 fixing runtime errors
 #           : f2 added simulation logging for auto_water simulation
+#           : f3 fixed sim log
 
 import logging
-import os  # Add this line to import the os module
-import time  # Add this line to import the time module
+import os
+import time
 
 # Ensure the /var/log directory exists
 log_dir = "/var/log/plantwatch"
@@ -71,19 +72,16 @@ last_watered_times = {i: None for i in range(1, 4)}
 def log_values(channel_id, soil_moisture_abs, soil_moisture_percent, water_given, light_level, simulate=False):
     logger = channel_loggers[channel_id]
     water_status = "Yes" if water_given else "No"
+    log_type = "Simulated" if simulate else ""
 
     # Check if the water was given and it is a new event
     if water_given and not simulate:
         last_watered_times[channel_id] = time.time()
     elif last_watered_times[channel_id] and time.time() - last_watered_times[channel_id] < 600:  # 600 seconds = 10 minutes
         water_status = "No"
-    
-    message = (f"soil moisture (abs): {soil_moisture_abs}, "
+        
+    message = (f"{log_type} soil moisture (abs): {soil_moisture_abs}, "
                f"soil moisture (%): {soil_moisture_percent:.2f}, "
                f"water given: {water_status}, "
                f"light level: {light_level}")
-    
-    if simulate:
-        message = f"Simulate: {message}"
-    
     logger.info(message)
