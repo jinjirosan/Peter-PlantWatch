@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f9 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f10 (stable) - refactor C1.0.0
 # changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
 #           : f2 - ensure the update method in Channel properly reflects when watering occurs
 #           : f3 - correctly import log_values
@@ -44,6 +44,7 @@
 #           : f7 - indicator_color error
 #           : f8 - added simulate_watering to log watering regardless of auto_water setting
 #           : f9 - added simulate prefix to logging 
+#           :f10 - missing functions replaced
 
 import time
 import math
@@ -161,6 +162,25 @@ class Channel:
                 return True
 
         return False
+
+    def should_water(self):
+        if len(self.moisture_readings) < self.moisture_readings.maxlen:
+            return False  # Not enough data yet
+
+        # Calculate the moving average of the readings
+        moving_average = self.get_moving_average()
+        logging.debug(f"Moving average: {moving_average}")
+
+        # Check for large changes and ignore them
+        for reading in self.moisture_readings:
+            if abs(reading - moving_average) > self.large_change_threshold:
+                logging.debug(f"Ignoring large change in reading: {reading}")
+                return False
+
+        # Check if there is a steady decline
+        steady_decline = all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
+        logging.debug(f"Steady decline detected: {steady_decline}")
+        return steady_decline
 
     def warn_color(self):
         value = self.sensor.moisture
@@ -289,15 +309,16 @@ Dry point: {dry_point}
         )
 
         # Log the simulation state
-        if self.should_water() and self.simulate_water() and sat < self.water_level:
+        if self.should_water() and sat < self.water_level and self.simulate_water():
             log_values(
                 self.channel,
                 self.sensor.moisture,
                 sat * 100,
-                True,  # Simulated water given
+                True,
                 context.light_level,
                 simulate=True
             )
+
 
 class Alarm(View):
     def __init__(self, image, enabled=True, interval=10.0, beep_frequency=440):
