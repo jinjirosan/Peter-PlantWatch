@@ -34,7 +34,9 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f1 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f2 (stable) - refactor C1.0.0
+# changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
+#           : f2 - ensure the update method in Channel properly reflects when watering occurs
 
 import time
 import math
@@ -268,11 +270,14 @@ Dry point: {dry_point}
             self.alarm = False
 
         # Log the current state, including whether watering was performed
-        logging.info(
-            "Channel: {}, soil moisture (abs): {:.2f}, soil moisture (%): {:.2f}, water given: {}".format(
-                self.channel, sat, sat * 100, "Yes" if watered else "No"
-            )
+        log_values(
+            self.channel,
+            self.sensor.moisture,
+            sat * 100,
+            watered,
+            light.get_lux()
         )
+
 
 
 class Alarm(View):
