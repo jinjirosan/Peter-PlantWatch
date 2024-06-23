@@ -34,7 +34,8 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# main.py : v2-2.5 (stable) - refactor C1.0.0
+# main.py : v2-2.5.1 (stable) - refactor C1.0.0
+# changelog : f1 - added seprate reusable context.py
 
 import logging
 import math
@@ -59,6 +60,7 @@ from controllers import ViewController
 from config import Config
 from constants import DISPLAY_WIDTH, DISPLAY_HEIGHT, BUTTONS, LABELS, FPS, COLOR_WHITE
 from plant_logging import log_values
+from context import Context
 
 def handle_button(pin):
     index = BUTTONS.index(pin)
@@ -185,26 +187,36 @@ Low Light Value {:.2f}
         ]
     )
 
+    # Create context object
+    context = Context()
+
     # Log values initially
+    context.light_level = light.get_lux()
     for channel in channels:
+        context.soil_moisture[channel.channel] = channel.sensor.moisture
         log_values(
             channel.channel,
             channel.sensor.moisture,
             channel.sensor.saturation * 100,
             channel.water(),
-            light.get_lux()
+            context.light_level
         )
 
     last_log_time = time.time()  # Track the last log time
 
     while True:
+        # Update context with latest sensor values
+        context.light_level = light.get_lux()
+        for channel in channels:
+            context.soil_moisture[channel.channel] = channel.sensor.moisture
+
         for channel in channels:
             config.set_channel(channel.channel, channel)
-            channel.update()
+            channel.update(context)  # Pass the context to the update method
             if channel.alarm:
                 alarm.trigger()
 
-        light_level_low = light.get_lux() < config.get_general().get("light_level_low")
+        light_level_low = context.light_level < config.get_general().get("light_level_low")
 
         alarm.update(light_level_low)
 
@@ -234,7 +246,7 @@ Low Light Value {:.2f}
                     channel.sensor.moisture,
                     channel.sensor.saturation * 100,
                     channel.water(),
-                    light.get_lux()
+                    context.light_level
                 )
             last_log_time = current_time
 
