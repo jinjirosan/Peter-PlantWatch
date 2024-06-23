@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2a (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f1 (stable) - refactor C1.0.0
 
 import time
 import math
