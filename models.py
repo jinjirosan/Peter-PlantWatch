@@ -34,9 +34,10 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f2 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f3 (stable) - refactor C1.0.0
 # changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
 #           : f2 - ensure the update method in Channel properly reflects when watering occurs
+#           : f3 - correctly import log_values
 
 import time
 import math
@@ -49,6 +50,7 @@ from grow import Piezo  # Import Piezo
 from PIL import Image
 from views import View  # Import View class
 from icons import icon_alarm, icon_snooze  # Import icons
+from plant_logging import log_values  # Add this line to import log_values
 
 class Channel:
     colors = [
