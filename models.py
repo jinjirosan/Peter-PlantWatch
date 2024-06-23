@@ -269,50 +269,50 @@ Dry point: {dry_point}
     def render(self, image, font):
         pass
 
-def update(self, context):
-    if not self.enabled:
-        return
-    sat = self.sensor.saturation
-    if sat > self.water_level and self.sensor.moisture == 0:
-        logging.warning(f"Ignoring invalid sensor reading: moisture={self.sensor.moisture}, saturation={sat}")
-        return
+    def update(self, context):
+        if not self.enabled:
+            return
+        sat = self.sensor.saturation
+        if sat > self.water_level and self.sensor.moisture == 0:
+            logging.warning(f"Ignoring invalid sensor reading: moisture={self.sensor.moisture}, saturation={sat}")
+            return
 
-    self.add_moisture_reading(sat)
-    
-    watered = False
-    simulated_water = False
-    if self.should_water() and sat < self.water_level:
-        if self.auto_water:
-            watered = self.water()
-            if watered:
-                logging.info(
-                    "Watering Channel: {} - rate {:.2f} for {:.2f}sec".format(
-                        self.channel, self.pump_speed, self.pump_time
+        self.add_moisture_reading(sat)
+        
+        watered = False
+        simulated_water = False
+        if self.should_water() and sat < self.water_level:
+            if self.auto_water:
+                watered = self.water()
+                if watered:
+                    logging.info(
+                        "Watering Channel: {} - rate {:.2f} for {:.2f}sec".format(
+                            self.channel, self.pump_speed, self.pump_time
+                        )
+                    )
+            else:
+                simulated_water = True
+            
+        if sat < self.warn_level:
+            if not self.alarm:
+                logging.warning(
+                    "Alarm on Channel: {} - saturation is {:.2f}% (warn level {:.2f}%)".format(
+                        self.channel, sat * 100, self.warn_level * 100
                     )
                 )
+            self.alarm = True
         else:
-            simulated_water = True
-        
-    if sat < self.warn_level:
-        if not self.alarm:
-            logging.warning(
-                "Alarm on Channel: {} - saturation is {:.2f}% (warn level {:.2f}%)".format(
-                    self.channel, sat * 100, self.warn_level * 100
-                )
-            )
-        self.alarm = True
-    else:
-        self.alarm = False
+            self.alarm = False
 
-    # Log the current state, including whether watering was performed
-    log_values(
-        self.channel,
-        self.sensor.moisture,
-        sat * 100,
-        watered or simulated_water,
-        context.light_level,
-        simulate=simulated_water
-    )
+        # Log the current state, including whether watering was performed
+        log_values(
+            self.channel,
+            self.sensor.moisture,
+            sat * 100,
+            watered or simulated_water,
+            context.light_level,
+            simulate=simulated_water
+        )
 
 
 
