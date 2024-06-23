@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2a (stable) - refactor C1.0.0
 
 import time
 import math
@@ -125,6 +125,9 @@ class Channel:
         self.sensor.set_dry_point(dry_point)
 
     def add_moisture_reading(self, reading):
+        if reading == 0 and self.sensor.saturation > self.water_level:
+            logging.warning(f"Ignoring invalid reading: {reading}")
+            return
         self.moisture_readings.append(reading)
         logging.debug(f"Added moisture reading: {reading}, current window: {list(self.moisture_readings)}")
 
@@ -149,7 +152,7 @@ class Channel:
 
         # Check if there is a steady decline
         steady_decline = all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
-        logging.debug(f"Sudden or strong decline detected: {steady_decline}")
+        logging.debug(f"Steady decline detected: {steady_decline}")
         return steady_decline
 
     def warn_color(self):
@@ -237,6 +240,10 @@ Dry point: {dry_point}
         if not self.enabled:
             return
         sat = self.sensor.saturation
+        if sat > self.water_level and self.sensor.moisture == 0:
+            logging.warning(f"Ignoring invalid sensor reading: moisture={self.sensor.moisture}, saturation={sat}")
+            return
+
         self.add_moisture_reading(sat)
         
         watered = False
@@ -266,6 +273,7 @@ Dry point: {dry_point}
                 self.channel, sat, sat * 100, "Yes" if watered else "No"
             )
         )
+
 
 class Alarm(View):
     def __init__(self, image, enabled=True, interval=10.0, beep_frequency=440):
