@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f10 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f11 (stable) - refactor C1.0.0
 # changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
 #           : f2 - ensure the update method in Channel properly reflects when watering occurs
 #           : f3 - correctly import log_values
@@ -45,6 +45,7 @@
 #           : f8 - added simulate_watering to log watering regardless of auto_water setting
 #           : f9 - added simulate prefix to logging 
 #           :f10 - missing functions replaced
+#           :f11 - refactored the simulation update function
 
 import time
 import math
@@ -268,18 +269,20 @@ Dry point: {dry_point}
     def render(self, image, font):
         pass
 
-    def update(self, context):
-        if not self.enabled:
-            return
-        sat = self.sensor.saturation
-        if sat > self.water_level and self.sensor.moisture == 0:
-            logging.warning(f"Ignoring invalid sensor reading: moisture={self.sensor.moisture}, saturation={sat}")
-            return
+def update(self, context):
+    if not self.enabled:
+        return
+    sat = self.sensor.saturation
+    if sat > self.water_level and self.sensor.moisture == 0:
+        logging.warning(f"Ignoring invalid sensor reading: moisture={self.sensor.moisture}, saturation={sat}")
+        return
 
-        self.add_moisture_reading(sat)
-        
-        watered = False
-        if self.should_water() and sat < self.water_level:
+    self.add_moisture_reading(sat)
+    
+    watered = False
+    simulated_water = False
+    if self.should_water() and sat < self.water_level:
+        if self.auto_water:
             watered = self.water()
             if watered:
                 logging.info(
@@ -287,37 +290,30 @@ Dry point: {dry_point}
                         self.channel, self.pump_speed, self.pump_time
                     )
                 )
-        
-        if sat < self.warn_level:
-            if not self.alarm:
-                logging.warning(
-                    "Alarm on Channel: {} - saturation is {:.2f}% (warn level {:.2f}%)".format(
-                        self.channel, sat * 100, self.warn_level * 100
-                    )
-                )
-            self.alarm = True
         else:
-            self.alarm = False
-
-        # Log the current state, including whether watering was performed
-        log_values(
-            self.channel,
-            self.sensor.moisture,
-            sat * 100,
-            watered,
-            context.light_level
-        )
-
-        # Log the simulation state
-        if self.should_water() and sat < self.water_level and self.simulate_water():
-            log_values(
-                self.channel,
-                self.sensor.moisture,
-                sat * 100,
-                True,
-                context.light_level,
-                simulate=True
+            simulated_water = True
+        
+    if sat < self.warn_level:
+        if not self.alarm:
+            logging.warning(
+                "Alarm on Channel: {} - saturation is {:.2f}% (warn level {:.2f}%)".format(
+                    self.channel, sat * 100, self.warn_level * 100
+                )
             )
+        self.alarm = True
+    else:
+        self.alarm = False
+
+    # Log the current state, including whether watering was performed
+    log_values(
+        self.channel,
+        self.sensor.moisture,
+        sat * 100,
+        watered or simulated_water,
+        context.light_level,
+        simulate=simulated_water
+    )
+
 
 
 class Alarm(View):
