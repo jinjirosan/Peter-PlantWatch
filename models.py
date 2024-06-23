@@ -34,10 +34,11 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f3 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f4 (stable) - refactor C1.0.0
 # changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
 #           : f2 - ensure the update method in Channel properly reflects when watering occurs
 #           : f3 - correctly import log_values
+#           : f4 - added reusable context.py class
 
 import time
 import math
@@ -240,7 +241,7 @@ Dry point: {dry_point}
     def render(self, image, font):
         pass
 
-    def update(self):
+    def update(self, context):
         if not self.enabled:
             return
         sat = self.sensor.saturation
@@ -277,8 +278,9 @@ Dry point: {dry_point}
             self.sensor.moisture,
             sat * 100,
             watered,
-            light.get_lux()
+            context.light_level
         )
+
 
 
 
