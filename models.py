@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f11 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f12 (stable) - refactor C1.0.0
 # changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
 #           : f2 - ensure the update method in Channel properly reflects when watering occurs
 #           : f3 - correctly import log_values
@@ -46,6 +46,7 @@
 #           : f9 - added simulate prefix to logging 
 #           :f10 - missing functions replaced
 #           :f11 - refactored the simulation update function
+#           :f12 - updated should_water function
 
 import time
 import math
@@ -178,10 +179,13 @@ class Channel:
                 logging.debug(f"Ignoring large change in reading: {reading}")
                 return False
 
-        # Check if there is a steady decline
-        steady_decline = all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
-        logging.debug(f"Steady decline detected: {steady_decline}")
-        return steady_decline
+        # Check if the moving average is below the water level
+        if moving_average < self.water_level:
+            logging.debug("Watering required based on moving average.")
+            return True
+
+        return False
+
 
     def warn_color(self):
         value = self.sensor.moisture
