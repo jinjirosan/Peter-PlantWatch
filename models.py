@@ -34,12 +34,13 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f5 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f6 (stable) - refactor C1.0.0
 # changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
 #           : f2 - ensure the update method in Channel properly reflects when watering occurs
 #           : f3 - correctly import log_values
 #           : f4 - added reusable context.py class
 #           : f5 - Change steady_decline to sudden_or_large_change. Ensure that sudden_or_large_change returns True if a large change is detected (which we want to ignore), and False otherwise.
+#           : f6 - decline and should_water adapted. Also refactored the code to clean up a bit
 
 import time
 import math
@@ -142,7 +143,7 @@ class Channel:
             return self.moisture_readings[0]
         return sum(self.moisture_readings) / len(self.moisture_readings)
 
-    def should_water(self):
+    def sudden_or_large_change(self):
         if len(self.moisture_readings) < self.moisture_readings.maxlen:
             return False  # Not enough data yet
 
@@ -150,36 +151,20 @@ class Channel:
         moving_average = self.get_moving_average()
         logging.debug(f"Moving average: {moving_average}")
 
-        # Check for large changes and ignore them
+        # Check for large changes
         for reading in self.moisture_readings:
             if abs(reading - moving_average) > self.large_change_threshold:
-                logging.debug(f"Ignoring large change in reading: {reading}")
-                return False
+                logging.debug(f"Detected large change in reading: {reading}")
+                return True
 
-        # Check if there is a steady decline
-        steady_decline = all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
-        logging.debug(f"Steady decline detected: {steady_decline}")
-        return steady_decline
+        return False
 
-    def warn_color(self):
-        value = self.sensor.moisture
+    def should_water(self):
+        if self.sudden_or_large_change():
+            return False  # Ignore sudden or large changes
 
-    def indicator_color(self, value):
-        value = 1.0 - value
-
-        if value == 1.0:
-            return self.colors[-1]
-        if value == 0.0:
-            return self.colors[0]
-
-        value *= len(self.colors) - 1
-        a = int(math.floor(value))
-        b = a + 1
-        blend = float(value - a)
-
-        r, g, b = [int(((self.colors[b][i] - self.colors[a][i]) * blend) + self.colors[a][i]) for i in range(3)]
-
-        return (r, g, b)
+        # Check if there is a steady decline in soil moisture readings
+        return all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
 
     def update_from_yml(self, config):
         if config is not None:
@@ -281,37 +266,6 @@ Dry point: {dry_point}
             watered,
             context.light_level
         )
-
-def add_moisture_reading(self, reading):
-    if reading == 0 and self.sensor.saturation > self.water_level:
-        logging.warning(f"Ignoring invalid reading: {reading}")
-        return
-    self.moisture_readings.append(reading)
-    logging.debug(f"Added moisture reading: {reading}, current window: {list(self.moisture_readings)}")
-
-def get_moving_average(self):
-    if len(self.moisture_readings) < 2:
-        return self.moisture_readings[0]
-    return sum(self.moisture_readings) / len(self.moisture_readings)
-
-def sudden_or_large_change(self):
-    if len(self.moisture_readings) < self.moisture_readings.maxlen:
-        return False  # Not enough data yet
-
-    # Calculate the moving average of the readings
-    moving_average = self.get_moving_average()
-    logging.debug(f"Moving average: {moving_average}")
-
-    # Check for large changes
-    for reading in self.moisture_readings:
-        if abs(reading - moving_average) > self.large_change_threshold:
-            logging.debug(f"Detected large change in reading: {reading}")
-            return True
-
-    return False
-
-
-
 
 class Alarm(View):
     def __init__(self, image, enabled=True, interval=10.0, beep_frequency=440):
