@@ -34,8 +34,13 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# plant_logging.py : v2-2.5.1 (stable) - refactor C1.0.0
+# plant_logging.py : v2-2.5.1.f1 (stable) - refactor C1.0.0
 # changelog : include a mechanism to track the last watering event and ensure it only logs "Yes" for the actual watering event
+#           : f1 fixing runtime errors
+
+import logging
+import os  # Add this line to import the os module
+import time  # Add this line to import the time module
 
 # Ensure the /var/log directory exists
 log_dir = "/var/log/plantwatch"
