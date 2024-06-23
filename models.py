@@ -34,13 +34,14 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f6 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f7 (stable) - refactor C1.0.0
 # changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
 #           : f2 - ensure the update method in Channel properly reflects when watering occurs
 #           : f3 - correctly import log_values
 #           : f4 - added reusable context.py class
 #           : f5 - Change steady_decline to sudden_or_large_change. Ensure that sudden_or_large_change returns True if a large change is detected (which we want to ignore), and False otherwise.
 #           : f6 - decline and should_water adapted. Also refactored the code to clean up a bit
+#           : f7 - indicator_color error
 
 import time
 import math
@@ -165,6 +166,26 @@ class Channel:
 
         # Check if there is a steady decline in soil moisture readings
         return all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
+
+    def warn_color(self):
+        value = self.sensor.moisture
+
+    def indicator_color(self, value):
+        value = 1.0 - value
+
+        if value == 1.0:
+            return self.colors[-1]
+        if value == 0.0:
+            return self.colors[0]
+
+        value *= len(self.colors) - 1
+        a = int(math.floor(value))
+        b = a + 1
+        blend = float(value - a)
+
+        r, g, b = [int(((self.colors[b][i] - self.colors[a][i]) * blend) + self.colors[a][i]) for i in range(3)]
+
+        return (r, g, b)
 
     def update_from_yml(self, config):
         if config is not None:
