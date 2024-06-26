@@ -45,3 +45,6 @@ PeterPlantwatch/
 9. **plant_logging.py**: all the logic for writing the logfiles
 
 The deploy.sh is a custom deployment script for my setup on the raspberry.
+
+## DTA code
+I've added a development environemnt where I can simulate measured values and see how the logic behaves. The output is to a separate logfile for further processing.
