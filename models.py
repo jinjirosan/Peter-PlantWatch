@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f13 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f12 (stable) - refactor C1.0.0
 # changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
 #           : f2 - ensure the update method in Channel properly reflects when watering occurs
 #           : f3 - correctly import log_values
@@ -47,7 +47,6 @@
 #           :f10 - missing functions replaced
 #           :f11 - refactored the simulation update function
 #           :f12 - updated should_water function
-#           :f13 - better absolute measured outlier detection to prevent unnecessary watering
 
 import time
 import math
@@ -60,6 +59,7 @@ from grow import Piezo  # Import Piezo
 from PIL import Image
 from views import View  # Import View class
 from icons import icon_alarm, icon_snooze  # Import icons
+from plant_logging import log_values  # Add this line to import log_values
 
 class Channel:
     colors = [
@@ -107,8 +107,7 @@ class Channel:
         self.sensor.set_dry_point(dry_point)
 
         # Debounce mechanism
-        self.moisture_readings = deque(maxlen=10)  # Store the last 10 readings
-        self.sensor.readings = self.moisture_readings  # Link readings to sensor
+        self.moisture_readings = deque(maxlen=5)  # Store the last 5 readings
         self.reading_interval = 60  # Interval between readings in seconds
         self.large_change_threshold = 10.0  # Threshold for ignoring large changes in percentage
 
@@ -139,16 +138,32 @@ class Channel:
         self.sensor.set_dry_point(dry_point)
 
     def add_moisture_reading(self, reading):
-        if len(self.moisture_readings) == 0 or abs(reading - self.get_moving_average()) <= self.large_change_threshold:
-            self.moisture_readings.append(reading)
-            logging.debug(f"Added moisture reading: {reading}, current window: {list(self.moisture_readings)}")
-        else:
-            logging.debug(f"Ignoring outlier reading: {reading}, current window: {list(self.moisture_readings)}")
+        if reading == 0 and self.sensor.saturation > self.water_level:
+            logging.warning(f"Ignoring invalid reading: {reading}")
+            return
+        self.moisture_readings.append(reading)
+        logging.debug(f"Added moisture reading: {reading}, current window: {list(self.moisture_readings)}")
 
     def get_moving_average(self):
-        if len(self.moisture_readings) == 0:
-            return 0
+        if len(self.moisture_readings) < 2:
+            return self.moisture_readings[0]
         return sum(self.moisture_readings) / len(self.moisture_readings)
+
+    def sudden_or_large_change(self):
+        if len(self.moisture_readings) < self.moisture_readings.maxlen:
+            return False  # Not enough data yet
+
+        # Calculate the moving average of the readings
+        moving_average = self.get_moving_average()
+        logging.debug(f"Moving average: {moving_average}")
+
+        # Check for large changes
+        for reading in self.moisture_readings:
+            if abs(reading - moving_average) > self.large_change_threshold:
+                logging.debug(f"Detected large change in reading: {reading}")
+                return True
+
+        return False
 
     def should_water(self):
         if len(self.moisture_readings) < self.moisture_readings.maxlen:
@@ -158,14 +173,22 @@ class Channel:
         moving_average = self.get_moving_average()
         logging.debug(f"Moving average: {moving_average}")
 
-        # Check if there is a steady decline
-        steady_decline = all(x > y for x, y in zip(self.moisture_readings, list(self.moisture_readings)[1:]))
-        logging.debug(f"Steady decline detected: {steady_decline}")
+        # Check for large changes and ignore them
+        for reading in self.moisture_readings:
+            if abs(reading - moving_average) > self.large_change_threshold:
+                logging.debug(f"Ignoring large change in reading: {reading}")
+                return False
 
-        return steady_decline and (moving_average < self.water_level)
+        # Check if the moving average is below the water level
+        if moving_average < self.water_level:
+            logging.debug("Watering required based on moving average.")
+            return True
+
+        return False
+
 
     def warn_color(self):
-        value = self.sensor.saturation
+        value = self.sensor.moisture
 
     def indicator_color(self, value):
         value = 1.0 - value
@@ -242,31 +265,38 @@ Dry point: {dry_point}
             return True
         return False
 
+    def simulate_water(self):
+        if time.time() - self.last_dose > self.watering_delay:
+            return True
+        return False
+
     def render(self, image, font):
         pass
 
-    def update(self):
+    def update(self, context):
         if not self.enabled:
             return
         sat = self.sensor.saturation
-
-        # Ignore erroneous readings
-        if len(self.moisture_readings) == 0 or abs(sat - self.get_moving_average()) > self.large_change_threshold:
-            logging.warning(f"Erroneous reading detected on Channel {self.channel}: moisture readings {list(self.moisture_readings)}")
+        if sat > self.water_level and self.sensor.moisture == 0:
+            logging.warning(f"Ignoring invalid sensor reading: moisture={self.sensor.moisture}, saturation={sat}")
             return
 
         self.add_moisture_reading(sat)
-
+        
         watered = False
-        if self.should_water():
-            watered = self.water()
-            if watered:
-                logging.info(
-                    "Watering Channel: {} - rate {:.2f} for {:.2f}sec".format(
-                        self.channel, self.pump_speed, self.pump_time
+        simulated_water = False
+        if self.should_water() and sat < self.water_level:
+            if self.auto_water:
+                watered = self.water()
+                if watered:
+                    logging.info(
+                        "Watering Channel: {} - rate {:.2f} for {:.2f}sec".format(
+                            self.channel, self.pump_speed, self.pump_time
+                        )
                     )
-                )
-
+            else:
+                simulated_water = True
+            
         if sat < self.warn_level:
             if not self.alarm:
                 logging.warning(
@@ -279,11 +309,16 @@ Dry point: {dry_point}
             self.alarm = False
 
         # Log the current state, including whether watering was performed
-        logging.info(
-            "Channel: {}, soil moisture (%): {:.2f}, water given: {}".format(
-                self.channel, sat * 100, "Yes" if watered else "No"
-            )
+        log_values(
+            self.channel,
+            self.sensor.moisture,
+            sat * 100,
+            watered or simulated_water,
+            context.light_level,
+            simulate=simulated_water
         )
+
+
 
 class Alarm(View):
     def __init__(self, image, enabled=True, interval=10.0, beep_frequency=440):
