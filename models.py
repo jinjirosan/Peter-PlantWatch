@@ -34,7 +34,7 @@
 # ├── hardware.py
 # └── plant_logging.py
 #
-# models.py : v2-2.7.2.f12 (stable) - refactor C1.0.0
+# models.py : v2-2.7.2.f13 (stable) - refactor C1.0.0
 # changelog : f1 - condition for ignoring invalid readings checks if the saturation is higher than the defined water_level instead of assuming it is always 100%
 #           : f2 - ensure the update method in Channel properly reflects when watering occurs
 #           : f3 - correctly import log_values
@@ -47,6 +47,7 @@
 #           :f10 - missing functions replaced
 #           :f11 - refactored the simulation update function
 #           :f12 - updated should_water function
+#           :f13 - store more values for deque calculations (10 instead of 5 readings)
 
 import time
 import math
@@ -107,7 +108,7 @@ class Channel:
         self.sensor.set_dry_point(dry_point)
 
         # Debounce mechanism
-        self.moisture_readings = deque(maxlen=5)  # Store the last 5 readings
+        self.moisture_readings = deque(maxlen=10)  # Store the last 5 readings
         self.reading_interval = 60  # Interval between readings in seconds
         self.large_change_threshold = 10.0  # Threshold for ignoring large changes in percentage
 
